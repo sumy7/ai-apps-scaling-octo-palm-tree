@@ -15,6 +15,7 @@ export interface Block {
 const AREA_C_ROWS = 4;
 const AREA_C_COLS = 5;
 const AREA_B_MAX = 7;
+const ELIMINATION_DELAY_MS = 100;
 
 interface GameState {
   // Area A: blocks to be eliminated (2D grid, column-first storage)
@@ -35,8 +36,12 @@ interface GameState {
   checkGameStatus: () => void;
 }
 
-// Generate unique ID
-const generateId = () => Math.random().toString(36).substring(2, 9);
+// Generate unique ID using crypto API for guaranteed uniqueness
+let idCounter = 0;
+const generateId = () => {
+  idCounter++;
+  return `${Date.now()}-${idCounter}-${Math.random().toString(36).substring(2, 9)}`;
+};
 
 // Create initial blocks for Area C
 const createAreaCBlocks = (): (Block | null)[][] => {
@@ -193,11 +198,11 @@ export const useGameStore = create<GameState>((set, get) => ({
         
         set({ areaA: newAreaA, areaB: newAreaB });
         
-        // Continue checking for more eliminations
+        // Continue checking for more eliminations after a delay for animation
         setTimeout(() => {
           get().tryEliminate();
           get().checkGameStatus();
-        }, 100);
+        }, ELIMINATION_DELAY_MS);
         return;
       }
     }

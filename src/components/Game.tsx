@@ -1,8 +1,26 @@
 import { useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
+import type { Block as BlockType } from '../store/gameStore';
 import { Block } from './Block';
 import './Game.css';
+
+/**
+ * Gets the block at a specific display position in Area A.
+ * Handles the conversion from visual row index to actual column array index.
+ * @param column - The column array of blocks
+ * @param rowIndex - The visual row index (0 = top)
+ * @param maxRows - The maximum number of rows to display
+ * @returns The block at the position or null
+ */
+const getBlockAtDisplayPosition = (
+  column: (BlockType | null)[],
+  rowIndex: number,
+  maxRows: number
+): BlockType | null => {
+  const actualIndex = maxRows - 1 - rowIndex;
+  return actualIndex < column.length ? column[column.length - 1 - actualIndex] : null;
+};
 
 export const Game: React.FC = () => {
   const { areaA, areaB, areaC, gameStatus, initGame, clickAreaC } = useGameStore();
@@ -44,9 +62,7 @@ export const Game: React.FC = () => {
             <div key={colIndex} className="column">
               {/* Render from top to bottom, but blocks are stored bottom-up */}
               {Array.from({ length: maxAreaARows }).map((_, rowIndex) => {
-                // Calculate the actual index in the column (reverse order for display)
-                const actualIndex = maxAreaARows - 1 - rowIndex;
-                const block = actualIndex < column.length ? column[column.length - 1 - actualIndex] : null;
+                const block = getBlockAtDisplayPosition(column, rowIndex, maxAreaARows);
                 
                 return (
                   <div key={rowIndex} className="cell">
