@@ -1,0 +1,157 @@
+.game-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.game-title {
+  font-size: 2rem;
+  color: #fff;
+  margin: 0;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.game-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 20px;
+  border-radius: 12px;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.game-status.won {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: white;
+}
+
+.game-status.lost {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+}
+
+.area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 15px;
+  border-radius: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.area h2 {
+  margin: 0;
+  font-size: 1rem;
+  color: #888;
+}
+
+.area-a {
+  background: linear-gradient(135deg, #1e3a5f, #2d5a87);
+  border: 2px solid #3b82f6;
+}
+
+.area-b {
+  background: linear-gradient(135deg, #3d2f0d, #5a4615);
+  border: 2px solid #eab308;
+}
+
+.area-c {
+  background: linear-gradient(135deg, #2d1f3d, #4a3267);
+  border: 2px solid #a855f7;
+}
+
+.area-content {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cell {
+  width: 54px;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+.area-b-content {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.area-b-content .cell {
+  width: 44px;
+  height: 44px;
+}
+
+.bottom-indicator,
+.top-indicator {
+  font-size: 0.85rem;
+  color: #aaa;
+}
+
+.capacity-hint {
+  font-size: 0.85rem;
+  color: #eab308;
+}
+
+.instructions {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 15px 20px;
+  border-radius: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.instructions h3 {
+  margin: 0 0 10px 0;
+  font-size: 1rem;
+  color: #fff;
+}
+
+.instructions ul {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 0.9rem;
+  color: #ccc;
+  line-height: 1.6;
+}
+
+.restart-btn {
+  padding: 10px 24px;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.restart-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+}
+
+.restart-btn.playing {
+  margin-top: 10px;
+}
