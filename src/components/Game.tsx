@@ -167,13 +167,18 @@ export const Game: React.FC = () => {
               <div className="capacity-hint">
                 {areaBCount === areaB.length ? '⚠️ 暂存区已满' : `还可放 ${areaB.length - areaBCount} 个`}
               </div>
-              <button 
-                className={`powerup-btn ${powerUpCount === 0 || areaBCount === 0 ? 'disabled' : ''}`}
-                onClick={handlePowerUp}
-                disabled={powerUpCount === 0 || areaBCount === 0 || gameStatus !== 'playing'}
-              >
-                🧹 清除道具 ({powerUpCount})
-              </button>
+              {(() => {
+                const isPowerUpDisabled = powerUpCount === 0 || areaBCount === 0 || gameStatus !== 'playing';
+                return (
+                  <button 
+                    className={`powerup-btn ${isPowerUpDisabled ? 'disabled' : ''}`}
+                    onClick={handlePowerUp}
+                    disabled={isPowerUpDisabled}
+                  >
+                    🧹 清除道具 ({powerUpCount})
+                  </button>
+                );
+              })()}
             </div>
           </div>
 

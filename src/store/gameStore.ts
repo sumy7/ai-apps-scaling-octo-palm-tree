@@ -19,6 +19,7 @@ const AREA_B_MAX = 7;
 const ELIMINATION_DELAY_MS = 100;
 const INITIAL_POWERUPS = 2;
 const POWERUP_REMOVE_COUNT = 3;
+const ELIMINATION_TARGET = 3; // Blocks needed to eliminate from Area A per Area B block
 
 interface GameState {
   // Area A: blocks to be eliminated (2D grid, column-first storage)
@@ -194,8 +195,8 @@ export const useGameStore = create<GameState>((set, get) => ({
             const newCount = currentCount + 1;
             
             const newAreaB = [...areaB];
-            if (newCount >= 3) {
-              // Block has eliminated 3 blocks, remove it from Area B
+            if (newCount >= ELIMINATION_TARGET) {
+              // Block has eliminated target blocks, remove it from Area B
               newAreaB[i] = null;
             } else {
               // Update the eliminated count
@@ -285,7 +286,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     const newAreaA = areaA.map(col => [...col]);
     
     for (const { block } of blocksToRemove) {
-      const remaining = 3 - (block.eliminatedCount || 0);
+      const remaining = ELIMINATION_TARGET - (block.eliminatedCount || 0);
       let toRemove = remaining;
       
       // Remove blocks from bottom of Area A columns that match the color
