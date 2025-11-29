@@ -1,6 +1,9 @@
 import { motion, type Variants } from 'framer-motion';
 import type { BlockColor } from '../store/gameStore';
 
+// Maximum eliminations before a block is removed from Area B
+const MAX_ELIMINATIONS = 3;
+
 interface BlockProps {
   color: BlockColor;
   onClick?: () => void;
@@ -54,8 +57,7 @@ export const Block: React.FC<BlockProps> = ({
   showRemaining = false
 }) => {
   const sizeValue = size === 'normal' ? 44 : 36;
-  const MAX_ELIMINATIONS = 3;
-  const remaining = MAX_ELIMINATIONS - (eliminatedCount || 0);
+  const remaining = Math.max(0, MAX_ELIMINATIONS - (eliminatedCount || 0));
   
   return (
     <motion.div
