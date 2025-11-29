@@ -5,21 +5,36 @@ import type { Block as BlockType } from '../store/gameStore';
 import { Block } from './Block';
 import './Game.css';
 
+// Fixed display rows for Area A and C
+const DISPLAY_ROWS = 5;
+
 /**
  * Gets the block at a specific display position in Area A.
- * Handles the conversion from visual row index to actual column array index.
- * @param column - The column array of blocks
- * @param rowIndex - The visual row index (0 = top)
- * @param maxRows - The maximum number of rows to display
- * @returns The block at the position or null
+ * Shows bottom rows (blocks at bottom of array)
  */
-const getBlockAtDisplayPosition = (
+const getBlockAtAreaADisplayPosition = (
   column: (BlockType | null)[],
-  rowIndex: number,
-  maxRows: number
+  rowIndex: number
 ): BlockType | null => {
-  const actualIndex = maxRows - 1 - rowIndex;
-  return actualIndex < column.length ? column[column.length - 1 - actualIndex] : null;
+  // rowIndex 0 = top of display area, we want to show from bottom
+  // If column has 10 blocks and we show 5 rows:
+  // rowIndex 0 should show column[5] (6th from bottom)
+  // rowIndex 4 should show column[9] (last/bottom block)
+  const startIndex = Math.max(0, column.length - DISPLAY_ROWS);
+  const actualIndex = startIndex + rowIndex;
+  return actualIndex < column.length ? column[actualIndex] : null;
+};
+
+/**
+ * Gets the block at a specific display position in Area C.
+ * Shows top rows (blocks at top of array)
+ */
+const getBlockAtAreaCDisplayPosition = (
+  column: (BlockType | null)[],
+  rowIndex: number
+): BlockType | null => {
+  // rowIndex 0 = top row, show first blocks
+  return rowIndex < column.length ? column[rowIndex] : null;
 };
 
 export const Game: React.FC = () => {
@@ -38,13 +53,15 @@ export const Game: React.FC = () => {
     initGame();
   };
 
-  // Find the maximum row count in Area A for proper grid display
-  const maxAreaARows = Math.max(...areaA.map(col => col.length), 1);
-
   // Count blocks in each area
   const areaACount = areaA.reduce((sum, col) => sum + col.length, 0);
   const areaCCount = areaC.reduce((sum, col) => sum + col.length, 0);
   const areaBCount = areaB.filter(b => b !== null).length;
+
+  // Check if there are hidden blocks above Area A
+  const hasHiddenAbove = areaA.some(col => col.length > DISPLAY_ROWS);
+  // Check if there are hidden blocks below Area C
+  const hasHiddenBelow = areaC.some(col => col.length > DISPLAY_ROWS);
 
   return (
     <div className="game-container">
@@ -76,40 +93,45 @@ export const Game: React.FC = () => {
 
       {/* Main Game Content */}
       <main className="game-main">
-        {/* Game Board - Three Column Layout */}
+        {/* Game Board - Vertical Layout */}
         <div className="game-board">
-          {/* Area A - Blocks to be eliminated (Left) */}
+          {/* Area A - Blocks to be eliminated (Top) */}
           <div className="area area-a">
             <div className="area-header">
               <h2>区域 A · 待消除</h2>
               <span className="area-badge">{areaACount} 个</span>
             </div>
-            <div className="area-content" style={{ gridTemplateColumns: `repeat(${areaA.length}, 1fr)` }}>
-              {areaA.map((column, colIndex) => (
-                <div key={colIndex} className="column">
-                  {Array.from({ length: maxAreaARows }).map((_, rowIndex) => {
-                    const block = getBlockAtDisplayPosition(column, rowIndex, maxAreaARows);
-                    
-                    return (
-                      <div key={rowIndex} className="cell">
-                        <AnimatePresence mode="popLayout">
-                          {block && (
-                            <Block 
-                              key={block.id} 
-                              color={block.color} 
-                            />
-                          )}
-                        </AnimatePresence>
-                      </div>
-                    );
-                  })}
-                </div>
-              ))}
+            {hasHiddenAbove && (
+              <div className="overflow-indicator top">⬆️ 还有更多方块</div>
+            )}
+            <div className="area-content-wrapper">
+              <div className="area-content" style={{ gridTemplateColumns: `repeat(${areaA.length}, 1fr)` }}>
+                {areaA.map((column, colIndex) => (
+                  <div key={colIndex} className="column">
+                    {Array.from({ length: DISPLAY_ROWS }).map((_, rowIndex) => {
+                      const block = getBlockAtAreaADisplayPosition(column, rowIndex);
+                      
+                      return (
+                        <div key={rowIndex} className="cell">
+                          <AnimatePresence mode="popLayout">
+                            {block && (
+                              <Block 
+                                key={block.id} 
+                                color={block.color} 
+                              />
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
             </div>
             <div className="bottom-indicator">⬇️ 只能消除最下面一行</div>
           </div>
 
-          {/* Area B - Temporary storage (Center) */}
+          {/* Area B - Temporary storage (Middle) */}
           <div className="area area-b">
             <div className="area-header">
               <h2>暂存区 B</h2>
@@ -125,6 +147,7 @@ export const Game: React.FC = () => {
                         color={block.color}
                         size="small"
                         eliminatedCount={block.eliminatedCount}
+                        showRemaining={true}
                       />
                     )}
                   </AnimatePresence>
@@ -136,33 +159,42 @@ export const Game: React.FC = () => {
             </div>
           </div>
 
-          {/* Area C - Blocks to use (Right) */}
+          {/* Area C - Blocks to use (Bottom) */}
           <div className="area area-c">
             <div className="area-header">
               <h2>区域 C · 消除用</h2>
               <span className="area-badge">{areaCCount} 个</span>
             </div>
             <div className="top-indicator">⬆️ 点击第一行的方块</div>
-            <div className="area-content" style={{ gridTemplateColumns: `repeat(${areaC.length}, 1fr)` }}>
-              {areaC.map((column, colIndex) => (
-                <div key={colIndex} className="column">
-                  {column.map((block, rowIndex) => (
-                    <div key={rowIndex} className="cell">
-                      <AnimatePresence mode="popLayout">
-                        {block && (
-                          <Block 
-                            key={block.id} 
-                            color={block.color}
-                            clickable={rowIndex === 0 && gameStatus === 'playing'}
-                            onClick={() => rowIndex === 0 && handleAreaCClick(colIndex)}
-                          />
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  ))}
-                </div>
-              ))}
+            <div className="area-content-wrapper">
+              <div className="area-content" style={{ gridTemplateColumns: `repeat(${areaC.length}, 1fr)` }}>
+                {areaC.map((column, colIndex) => (
+                  <div key={colIndex} className="column">
+                    {Array.from({ length: DISPLAY_ROWS }).map((_, rowIndex) => {
+                      const block = getBlockAtAreaCDisplayPosition(column, rowIndex);
+                      
+                      return (
+                        <div key={rowIndex} className="cell">
+                          <AnimatePresence mode="popLayout">
+                            {block && (
+                              <Block 
+                                key={block.id} 
+                                color={block.color}
+                                clickable={rowIndex === 0 && gameStatus === 'playing'}
+                                onClick={() => rowIndex === 0 && handleAreaCClick(colIndex)}
+                              />
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
             </div>
+            {hasHiddenBelow && (
+              <div className="overflow-indicator bottom">⬇️ 还有更多方块</div>
+            )}
           </div>
         </div>
 

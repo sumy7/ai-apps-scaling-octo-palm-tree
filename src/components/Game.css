@@ -4,7 +4,7 @@
   flex-direction: column;
   min-height: 100vh;
   width: 100%;
-  max-width: 1400px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 0;
 }
@@ -14,13 +14,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 24px;
+  padding: 12px 24px;
   background: rgba(0, 0, 0, 0.2);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .game-title {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   color: #fff;
   margin: 0;
   font-weight: 600;
@@ -30,12 +30,12 @@
 .header-controls {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
 }
 
 .help-toggle {
-  padding: 8px 16px;
-  font-size: 0.875rem;
+  padding: 6px 12px;
+  font-size: 0.8rem;
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: #ccc;
@@ -82,25 +82,26 @@
 .game-main {
   display: flex;
   flex: 1;
-  gap: 24px;
-  padding: 24px;
+  gap: 20px;
+  padding: 16px 24px;
 }
 
-/* ===== Game Board (Three Columns) ===== */
+/* ===== Game Board (Vertical Layout) ===== */
 .game-board {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  gap: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   flex: 1;
-  align-items: start;
+  max-width: 400px;
+  margin: 0 auto;
 }
 
 /* ===== Area Styles ===== */
 .area {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 20px;
+  gap: 8px;
+  padding: 16px;
   border-radius: 12px;
   box-sizing: border-box;
 }
@@ -109,13 +110,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-bottom: 8px;
+  padding-bottom: 6px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .area h2 {
   margin: 0;
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: #fff;
   text-transform: uppercase;
@@ -123,7 +124,7 @@
 }
 
 .area-badge {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   padding: 2px 8px;
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.15);
@@ -143,7 +144,6 @@
 .area-b {
   background: linear-gradient(135deg, #3d2f0d, #5a4615);
   border: 2px solid #eab308;
-  min-width: 200px;
 }
 
 .area-b .area-badge {
@@ -161,10 +161,16 @@
   color: #d8b4fe;
 }
 
+/* ===== Area Content Wrapper for Fixed Height ===== */
+.area-content-wrapper {
+  overflow: hidden;
+  position: relative;
+}
+
 /* ===== Grid Content ===== */
 .area-content {
   display: grid;
-  gap: 8px;
+  gap: 6px;
   justify-items: center;
   justify-content: center;
 }
@@ -172,12 +178,12 @@
 .column {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .cell {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -192,15 +198,15 @@
 
 /* ===== Area B Content ===== */
 .area-b-content {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  display: flex;
   gap: 8px;
-  justify-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
 .area-b-content .cell {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
 }
 
 /* ===== Indicators ===== */
@@ -210,30 +216,50 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: rgba(255, 255, 255, 0.5);
-  padding: 8px;
+  padding: 6px;
   background: rgba(0, 0, 0, 0.2);
   border-radius: 6px;
-  margin-top: 8px;
+}
+
+.overflow-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.overflow-indicator.top {
+  margin-bottom: 4px;
+}
+
+.overflow-indicator.bottom {
+  margin-top: 4px;
 }
 
 .capacity-hint {
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   color: #eab308;
   text-align: center;
-  margin-top: 8px;
+  margin-top: 4px;
 }
 
 /* ===== Instructions Panel ===== */
 .instructions-panel {
-  width: 280px;
+  width: 260px;
   flex-shrink: 0;
   background: rgba(0, 0, 0, 0.3);
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   overflow: hidden;
   transition: all 0.3s ease;
+  align-self: flex-start;
 }
 
 .instructions-panel.collapsed {
@@ -244,17 +270,17 @@
 }
 
 .instructions {
-  padding: 20px;
+  padding: 16px;
 }
 
 .instructions h3 {
-  margin: 0 0 16px 0;
-  font-size: 0.875rem;
+  margin: 0 0 12px 0;
+  font-size: 0.8rem;
   font-weight: 600;
   color: #fff;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  padding-bottom: 12px;
+  padding-bottom: 10px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -262,15 +288,15 @@
   margin: 0;
   padding-left: 0;
   list-style: none;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: #aaa;
-  line-height: 1.8;
+  line-height: 1.7;
 }
 
 .instructions li {
   position: relative;
-  padding-left: 16px;
-  margin-bottom: 8px;
+  padding-left: 14px;
+  margin-bottom: 6px;
 }
 
 .instructions li::before {
@@ -282,8 +308,8 @@
 
 /* ===== Buttons ===== */
 .restart-btn {
-  padding: 10px 20px;
-  font-size: 0.875rem;
+  padding: 8px 16px;
+  font-size: 0.8rem;
   font-weight: 600;
   border-radius: 8px;
   border: none;
@@ -303,50 +329,44 @@
 }
 
 /* ===== Responsive Design ===== */
-@media (max-width: 1200px) {
-  .game-board {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto;
-  }
-  
-  .area-b {
-    order: -1;
-    min-width: auto;
-  }
-  
-  .area-b-content {
-    grid-template-columns: repeat(7, 1fr);
-  }
-  
-  .instructions-panel {
-    display: none;
-  }
-}
-
 @media (max-width: 768px) {
   .game-header {
-    padding: 12px 16px;
+    padding: 10px 16px;
   }
   
   .game-title {
-    font-size: 1.25rem;
+    font-size: 1rem;
   }
   
   .game-main {
-    padding: 16px;
+    padding: 12px;
+    flex-direction: column;
+  }
+  
+  .game-board {
+    max-width: 100%;
+  }
+  
+  .instructions-panel {
+    width: 100%;
+    order: 1;
+  }
+  
+  .instructions-panel.collapsed {
+    display: none;
   }
   
   .area {
-    padding: 16px;
+    padding: 12px;
   }
   
   .cell {
-    width: 40px;
-    height: 40px;
+    width: 38px;
+    height: 38px;
   }
   
   .area-b-content .cell {
-    width: 36px;
-    height: 36px;
+    width: 34px;
+    height: 34px;
   }
 }
