@@ -1,29 +1,71 @@
+/* ===== Layout Container ===== */
 .game-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 20px;
-  padding: 20px;
-  max-width: 600px;
+  min-height: 100vh;
+  width: 100%;
+  max-width: 1200px;
   margin: 0 auto;
+  padding: 0;
+}
+
+/* ===== Header ===== */
+.game-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  background: rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .game-title {
-  font-size: 2rem;
+  font-size: 1.25rem;
   color: #fff;
   margin: 0;
+  font-weight: 600;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.help-toggle {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ccc;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.help-toggle:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* ===== Game Status Overlay ===== */
 .game-status {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 20px;
-  border-radius: 12px;
-  font-size: 1.5rem;
+  gap: 16px;
+  padding: 32px 48px;
+  border-radius: 16px;
+  font-size: 1.75rem;
   font-weight: bold;
+  z-index: 100;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
 .game-status.won {
@@ -36,21 +78,57 @@
   color: white;
 }
 
+/* ===== Main Content Area ===== */
+.game-main {
+  display: flex;
+  flex: 1;
+  gap: 20px;
+  padding: 16px 24px;
+}
+
+/* ===== Game Board (Vertical Layout) ===== */
+.game-board {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+  max-width: min(400px, 90vw);
+  margin: 0 auto;
+}
+
+/* ===== Area Styles ===== */
 .area {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  padding: 15px;
+  gap: 8px;
+  padding: 16px;
   border-radius: 12px;
-  width: 100%;
   box-sizing: border-box;
+}
+
+.area-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .area h2 {
   margin: 0;
-  font-size: 1rem;
-  color: #888;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.area-badge {
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .area-a {
@@ -58,9 +136,19 @@
   border: 2px solid #3b82f6;
 }
 
+.area-a .area-badge {
+  background: rgba(59, 130, 246, 0.3);
+  color: #93c5fd;
+}
+
 .area-b {
   background: linear-gradient(135deg, #3d2f0d, #5a4615);
   border: 2px solid #eab308;
+}
+
+.area-b .area-badge {
+  background: rgba(234, 179, 8, 0.3);
+  color: #fde047;
 }
 
 .area-c {
@@ -68,90 +156,248 @@
   border: 2px solid #a855f7;
 }
 
+.area-c .area-badge {
+  background: rgba(168, 85, 247, 0.3);
+  color: #d8b4fe;
+}
+
+/* ===== Area Content Wrapper for Fixed Height ===== */
+.area-content-wrapper {
+  overflow: hidden;
+  position: relative;
+}
+
+/* ===== Grid Content ===== */
 .area-content {
   display: grid;
-  gap: 8px;
+  gap: 6px;
   justify-items: center;
+  justify-content: center;
 }
 
 .column {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .cell {
-  width: 54px;
-  height: 54px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 8px;
+  transition: background 0.2s;
 }
 
+.cell:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* ===== Area B Content ===== */
 .area-b-content {
   display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
+  gap: 8px;
   justify-content: center;
+  flex-wrap: wrap;
 }
 
 .area-b-content .cell {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
 }
 
+/* ===== Indicators ===== */
 .bottom-indicator,
 .top-indicator {
-  font-size: 0.85rem;
-  color: #aaa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.5);
+  padding: 6px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+}
+
+.overflow-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.overflow-indicator.top {
+  margin-bottom: 4px;
+}
+
+.overflow-indicator.bottom {
+  margin-top: 4px;
 }
 
 .capacity-hint {
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   color: #eab308;
+  text-align: center;
+}
+
+.area-b-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.powerup-btn {
+  padding: 6px 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 6px;
+  border: none;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.powerup-btn:hover:not(.disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+}
+
+.powerup-btn.disabled {
+  background: linear-gradient(135deg, #6b7280, #4b5563);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* ===== Instructions Panel ===== */
+.instructions-panel {
+  width: 260px;
+  flex-shrink: 0;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  align-self: flex-start;
+}
+
+.instructions-panel.collapsed {
+  width: 0;
+  padding: 0;
+  border: none;
+  opacity: 0;
 }
 
 .instructions {
-  background: rgba(255, 255, 255, 0.1);
-  padding: 15px 20px;
-  border-radius: 12px;
-  width: 100%;
-  box-sizing: border-box;
+  padding: 16px;
 }
 
 .instructions h3 {
-  margin: 0 0 10px 0;
-  font-size: 1rem;
+  margin: 0 0 12px 0;
+  font-size: 0.8rem;
+  font-weight: 600;
   color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .instructions ul {
   margin: 0;
-  padding-left: 20px;
-  font-size: 0.9rem;
-  color: #ccc;
-  line-height: 1.6;
+  padding-left: 0;
+  list-style: none;
+  font-size: 0.75rem;
+  color: #aaa;
+  line-height: 1.7;
 }
 
+.instructions li {
+  position: relative;
+  padding-left: 14px;
+  margin-bottom: 6px;
+}
+
+.instructions li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: #6366f1;
+}
+
+/* ===== Buttons ===== */
 .restart-btn {
-  padding: 10px 24px;
-  font-size: 1rem;
-  font-weight: bold;
+  padding: 8px 16px;
+  font-size: 0.8rem;
+  font-weight: 600;
   border-radius: 8px;
   border: none;
   background: linear-gradient(135deg, #6366f1, #8b5cf6);
   color: white;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: all 0.2s;
 }
 
 .restart-btn:hover {
-  transform: scale(1.05);
+  transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
 }
 
-.restart-btn.playing {
-  margin-top: 10px;
+.restart-btn:active {
+  transform: translateY(0);
+}
+
+/* ===== Responsive Design ===== */
+@media (max-width: 768px) {
+  .game-header {
+    padding: 10px 16px;
+  }
+  
+  .game-title {
+    font-size: 1rem;
+  }
+  
+  .game-main {
+    padding: 12px;
+    flex-direction: column;
+  }
+  
+  .game-board {
+    max-width: 100%;
+  }
+  
+  .instructions-panel {
+    width: 100%;
+    order: 1;
+  }
+  
+  .instructions-panel.collapsed {
+    display: none;
+  }
+  
+  .area {
+    padding: 12px;
+  }
+  
+  .cell {
+    width: 38px;
+    height: 38px;
+  }
+  
+  .area-b-content .cell {
+    width: 34px;
+    height: 34px;
+  }
 }

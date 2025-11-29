@@ -17,6 +17,9 @@ const AREA_C_ROWS = 4;
 const AREA_C_COLS = 5;
 const AREA_B_MAX = 7;
 const ELIMINATION_DELAY_MS = 100;
+const INITIAL_POWERUPS = 2;
+const POWERUP_REMOVE_COUNT = 3;
+const ELIMINATION_TARGET = 3; // Blocks needed to eliminate from Area A per Area B block
 
 interface GameState {
   // Area A: blocks to be eliminated (2D grid, column-first storage)
@@ -27,6 +30,8 @@ interface GameState {
   areaC: (Block | null)[][];
   // Game status
   gameStatus: 'playing' | 'won' | 'lost';
+  // Power-up count
+  powerUpCount: number;
   // Initialize game
   initGame: () => void;
   // Click block in Area C
@@ -35,6 +40,8 @@ interface GameState {
   tryEliminate: () => void;
   // Check win/lose conditions
   checkGameStatus: () => void;
+  // Activate power-up to remove blocks from Area B
+  activatePowerUp: () => void;
 }
 
 // Generate unique ID using crypto API for guaranteed uniqueness
@@ -111,13 +118,14 @@ export const useGameStore = create<GameState>((set, get) => ({
   areaB: [],
   areaC: [],
   gameStatus: 'playing',
+  powerUpCount: INITIAL_POWERUPS,
 
   initGame: () => {
     const areaC = createAreaCBlocks();
     const areaA = createAreaABlocks(areaC);
     const areaB: (Block | null)[] = new Array(AREA_B_MAX).fill(null);
     
-    set({ areaA, areaB, areaC, gameStatus: 'playing' });
+    set({ areaA, areaB, areaC, gameStatus: 'playing', powerUpCount: INITIAL_POWERUPS });
   },
 
   clickAreaC: (col: number) => {
@@ -187,8 +195,8 @@ export const useGameStore = create<GameState>((set, get) => ({
             const newCount = currentCount + 1;
             
             const newAreaB = [...areaB];
-            if (newCount >= 3) {
-              // Block has eliminated 3 blocks, remove it from Area B
+            if (newCount >= ELIMINATION_TARGET) {
+              // Block has eliminated target blocks, remove it from Area B
               newAreaB[i] = null;
             } else {
               // Update the eliminated count
@@ -213,7 +221,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
 
   checkGameStatus: () => {
-    const { areaA, areaB, areaC } = get();
+    const { areaA, areaB, areaC, powerUpCount } = get();
     
     // Check win condition: all areas empty
     const areaAEmpty = areaA.every(col => col.length === 0);
@@ -225,7 +233,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       return;
     }
     
-    // Check lose condition: Area B is full and no elimination is possible
+    // Check lose condition: Area B is full and no elimination is possible and no power-ups
     const areaBFull = areaB.every(b => b !== null);
     
     if (areaBFull) {
@@ -245,9 +253,66 @@ export const useGameStore = create<GameState>((set, get) => ({
         if (canEliminate) break;
       }
       
-      if (!canEliminate) {
+      // Only lose if can't eliminate AND no power-ups available
+      if (!canEliminate && powerUpCount === 0) {
         set({ gameStatus: 'lost' });
       }
     }
+  },
+
+  activatePowerUp: () => {
+    const { areaA, areaB, powerUpCount, gameStatus } = get();
+    if (gameStatus !== 'playing') return;
+    if (powerUpCount <= 0) return;
+    
+    // Get the first 3 blocks from Area B (non-null)
+    const blocksToRemove: { index: number; block: Block }[] = [];
+    for (let i = 0; i < areaB.length && blocksToRemove.length < POWERUP_REMOVE_COUNT; i++) {
+      const block = areaB[i];
+      if (block) {
+        blocksToRemove.push({ index: i, block });
+      }
+    }
+    
+    if (blocksToRemove.length === 0) return;
+    
+    // Create new Area B with removed blocks
+    const newAreaB = [...areaB];
+    for (const { index } of blocksToRemove) {
+      newAreaB[index] = null;
+    }
+    
+    // Remove corresponding blocks from Area A based on remaining elimination count
+    const newAreaA = areaA.map(col => [...col]);
+    
+    for (const { block } of blocksToRemove) {
+      const remaining = ELIMINATION_TARGET - (block.eliminatedCount || 0);
+      let toRemove = remaining;
+      
+      // Remove blocks from bottom of Area A columns that match the color
+      for (let col = 0; col < newAreaA.length && toRemove > 0; col++) {
+        const column = newAreaA[col];
+        // Remove from bottom
+        for (let row = column.length - 1; row >= 0 && toRemove > 0; row--) {
+          const aBlock = column[row];
+          if (aBlock && aBlock.color === block.color) {
+            column.splice(row, 1);
+            toRemove--;
+          }
+        }
+      }
+    }
+    
+    set({ 
+      areaA: newAreaA, 
+      areaB: newAreaB, 
+      powerUpCount: powerUpCount - 1 
+    });
+    
+    // Check game status after power-up use
+    setTimeout(() => {
+      get().tryEliminate();
+      get().checkGameStatus();
+    }, ELIMINATION_DELAY_MS);
   },
 }));

@@ -1,5 +1,8 @@
-import { motion } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion';
 import type { BlockColor } from '../store/gameStore';
+
+// Maximum eliminations before a block is removed from Area B
+const MAX_ELIMINATIONS = 3;
 
 interface BlockProps {
   color: BlockColor;
@@ -7,6 +10,7 @@ interface BlockProps {
   clickable?: boolean;
   size?: 'normal' | 'small';
   eliminatedCount?: number;
+  showRemaining?: boolean; // Show remaining eliminations instead of count
 }
 
 const colorMap: Record<BlockColor, string> = {
@@ -17,20 +21,51 @@ const colorMap: Record<BlockColor, string> = {
   purple: '#a855f7',
 };
 
+// Animation variants for different block behaviors
+const blockVariants: Variants = {
+  initial: { 
+    scale: 0, 
+    opacity: 0,
+    y: -20 
+  },
+  animate: { 
+    scale: 1, 
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: 'spring' as const,
+      stiffness: 400,
+      damping: 25,
+    }
+  },
+  exit: { 
+    scale: 0, 
+    opacity: 0,
+    transition: {
+      duration: 0.2,
+      ease: 'easeOut'
+    }
+  },
+};
+
 export const Block: React.FC<BlockProps> = ({ 
   color, 
   onClick, 
   clickable = false,
   size = 'normal',
-  eliminatedCount
+  eliminatedCount,
+  showRemaining = false
 }) => {
-  const sizeValue = size === 'normal' ? 50 : 40;
+  const sizeValue = size === 'normal' ? 44 : 36;
+  const remaining = Math.max(0, MAX_ELIMINATIONS - (eliminatedCount || 0));
   
   return (
     <motion.div
-      initial={{ scale: 0 }}
-      animate={{ scale: 1 }}
-      exit={{ scale: 0 }}
+      variants={blockVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      layout
       whileHover={clickable ? { scale: 1.1 } : undefined}
       whileTap={clickable ? { scale: 0.95 } : undefined}
       onClick={onClick}
@@ -40,32 +75,25 @@ export const Block: React.FC<BlockProps> = ({
         backgroundColor: colorMap[color],
         borderRadius: 8,
         cursor: clickable ? 'pointer' : 'default',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+        boxShadow: clickable 
+          ? '0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2)' 
+          : '0 2px 4px rgba(0,0,0,0.3)',
         border: '2px solid rgba(255,255,255,0.3)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         position: 'relative',
+        transition: 'box-shadow 0.2s',
       }}
     >
-      {eliminatedCount !== undefined && eliminatedCount > 0 && (
+      {showRemaining && remaining > 0 && (
         <span style={{
-          position: 'absolute',
-          bottom: -4,
-          right: -4,
-          backgroundColor: '#1f2937',
           color: 'white',
-          fontSize: 12,
+          fontSize: size === 'small' ? 14 : 16,
           fontWeight: 'bold',
-          width: 18,
-          height: 18,
-          borderRadius: '50%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          border: '1px solid white',
+          textShadow: '0 1px 2px rgba(0,0,0,0.5)',
         }}>
-          {eliminatedCount}
+          {remaining}
         </span>
       )}
     </motion.div>
