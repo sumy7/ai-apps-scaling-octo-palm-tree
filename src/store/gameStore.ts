@@ -9,6 +9,7 @@ export const BLOCK_COLORS: BlockColor[] = ['red', 'blue', 'green', 'yellow', 'pu
 export interface Block {
   id: string;
   color: BlockColor;
+  eliminatedCount?: number; // Track how many blocks this block has eliminated (for Area B blocks)
 }
 
 // Game configuration
@@ -166,45 +167,44 @@ export const useGameStore = create<GameState>((set, get) => ({
       const bBlock = areaB[i];
       if (!bBlock) continue;
       
-      // Count matching blocks in the bottom row of Area A
-      const matchingPositions: { col: number }[] = [];
+      // Find the first matching block in the bottom row of Area A
       for (let col = 0; col < areaA.length; col++) {
         const column = areaA[col];
         if (column.length > 0) {
           const bottomBlock = column[column.length - 1];
           if (bottomBlock && bottomBlock.color === bBlock.color) {
-            matchingPositions.push({ col });
+            // Found a matching block - eliminate it
+            const newAreaA = areaA.map((c, colIdx) => {
+              if (colIdx === col) {
+                // Remove the bottom block
+                return c.slice(0, -1);
+              }
+              return c;
+            });
+            
+            // Update the eliminated count for this Area B block
+            const currentCount = bBlock.eliminatedCount || 0;
+            const newCount = currentCount + 1;
+            
+            const newAreaB = [...areaB];
+            if (newCount >= 3) {
+              // Block has eliminated 3 blocks, remove it from Area B
+              newAreaB[i] = null;
+            } else {
+              // Update the eliminated count
+              newAreaB[i] = { ...bBlock, eliminatedCount: newCount };
+            }
+            
+            set({ areaA: newAreaA, areaB: newAreaB });
+            
+            // Continue checking for more eliminations after a delay for animation
+            setTimeout(() => {
+              get().tryEliminate();
+              get().checkGameStatus();
+            }, ELIMINATION_DELAY_MS);
+            return;
           }
         }
-      }
-      
-      // If we have 3 or more matching blocks, eliminate them
-      if (matchingPositions.length >= 3) {
-        // Take first 3 matches
-        const toEliminate = matchingPositions.slice(0, 3);
-        
-        // Remove blocks from Area A
-        const newAreaA = areaA.map((column, col) => {
-          const shouldRemove = toEliminate.some(pos => pos.col === col);
-          if (shouldRemove) {
-            // Remove the bottom block
-            return column.slice(0, -1);
-          }
-          return column;
-        });
-        
-        // Remove the block from Area B
-        const newAreaB = [...areaB];
-        newAreaB[i] = null;
-        
-        set({ areaA: newAreaA, areaB: newAreaB });
-        
-        // Continue checking for more eliminations after a delay for animation
-        setTimeout(() => {
-          get().tryEliminate();
-          get().checkGameStatus();
-        }, ELIMINATION_DELAY_MS);
-        return;
       }
     }
     
@@ -229,23 +229,20 @@ export const useGameStore = create<GameState>((set, get) => ({
     const areaBFull = areaB.every(b => b !== null);
     
     if (areaBFull) {
-      // Check if any elimination is possible
+      // Check if any elimination is possible (any matching color in bottom row of Area A)
       let canEliminate = false;
       for (const bBlock of areaB) {
         if (!bBlock) continue;
-        let count = 0;
         for (const column of areaA) {
           if (column.length > 0) {
             const bottomBlock = column[column.length - 1];
             if (bottomBlock && bottomBlock.color === bBlock.color) {
-              count++;
+              canEliminate = true;
+              break;
             }
           }
         }
-        if (count >= 3) {
-          canEliminate = true;
-          break;
-        }
+        if (canEliminate) break;
       }
       
       if (!canEliminate) {

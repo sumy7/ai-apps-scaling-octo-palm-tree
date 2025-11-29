@@ -6,6 +6,7 @@ interface BlockProps {
   onClick?: () => void;
   clickable?: boolean;
   size?: 'normal' | 'small';
+  eliminatedCount?: number;
 }
 
 const colorMap: Record<BlockColor, string> = {
@@ -20,7 +21,8 @@ export const Block: React.FC<BlockProps> = ({
   color, 
   onClick, 
   clickable = false,
-  size = 'normal'
+  size = 'normal',
+  eliminatedCount
 }) => {
   const sizeValue = size === 'normal' ? 50 : 40;
   
@@ -40,7 +42,32 @@ export const Block: React.FC<BlockProps> = ({
         cursor: clickable ? 'pointer' : 'default',
         boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
         border: '2px solid rgba(255,255,255,0.3)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'relative',
       }}
-    />
+    >
+      {eliminatedCount !== undefined && eliminatedCount > 0 && (
+        <span style={{
+          position: 'absolute',
+          bottom: -4,
+          right: -4,
+          backgroundColor: '#1f2937',
+          color: 'white',
+          fontSize: 12,
+          fontWeight: 'bold',
+          width: 18,
+          height: 18,
+          borderRadius: '50%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          border: '1px solid white',
+        }}>
+          {eliminatedCount}
+        </span>
+      )}
+    </motion.div>
   );
 };

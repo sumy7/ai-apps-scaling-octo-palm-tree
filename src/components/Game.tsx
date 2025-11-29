@@ -95,6 +95,7 @@ export const Game: React.FC = () => {
                     key={block.id} 
                     color={block.color}
                     size="small"
+                    eliminatedCount={block.eliminatedCount}
                   />
                 )}
               </AnimatePresence>
@@ -135,7 +136,8 @@ export const Game: React.FC = () => {
         <h3>游戏规则</h3>
         <ul>
           <li>点击区域 C 最上面一行的方块，将其移动到暂存区 B</li>
-          <li>暂存区 B 的方块可以消除区域 A 最下面一行的 3 个相同颜色的方块</li>
+          <li>暂存区 B 的方块可以逐个消除区域 A 最下面一行的相同颜色方块</li>
+          <li>暂存区 B 的方块消除 3 个区域 A 的方块后，会从暂存区移除</li>
           <li>区域 A 的方块消除后，上方方块会自动下落补位</li>
           <li>区域 C 的方块被取走后，下方方块会自动上移补位</li>
           <li>胜利条件：所有区域都没有方块</li>
