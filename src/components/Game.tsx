@@ -10,35 +10,40 @@ const DISPLAY_ROWS = 5;
 
 /**
  * Gets the block at a specific display position in Area A.
- * Shows bottom rows (blocks at bottom of array)
+ * Blocks align to bottom - empty cells at top, blocks at bottom
  */
 const getBlockAtAreaADisplayPosition = (
   column: (BlockType | null)[],
   rowIndex: number
 ): BlockType | null => {
-  // rowIndex 0 = top of display area, we want to show from bottom
-  // If column has 10 blocks and we show 5 rows:
-  // rowIndex 0 should show column[5] (6th from bottom)
-  // rowIndex 4 should show column[9] (last/bottom block)
-  const startIndex = Math.max(0, column.length - DISPLAY_ROWS);
-  const actualIndex = startIndex + rowIndex;
-  return actualIndex < column.length ? column[actualIndex] : null;
+  // We want blocks to align to bottom
+  // If we have 3 blocks and 5 display rows:
+  // rowIndex 0, 1 = empty (top)
+  // rowIndex 2, 3, 4 = blocks (bottom)
+  const emptyRows = DISPLAY_ROWS - Math.min(column.length, DISPLAY_ROWS);
+  if (rowIndex < emptyRows) {
+    return null;
+  }
+  const blockIndex = rowIndex - emptyRows;
+  // Show the bottom-most blocks if there are more than DISPLAY_ROWS
+  const startOffset = Math.max(0, column.length - DISPLAY_ROWS);
+  return column[startOffset + blockIndex] || null;
 };
 
 /**
  * Gets the block at a specific display position in Area C.
- * Shows top rows (blocks at top of array)
+ * Blocks align to top - blocks at top, empty cells at bottom
  */
 const getBlockAtAreaCDisplayPosition = (
   column: (BlockType | null)[],
   rowIndex: number
 ): BlockType | null => {
-  // rowIndex 0 = top row, show first blocks
+  // Blocks align to top, show first DISPLAY_ROWS blocks
   return rowIndex < column.length ? column[rowIndex] : null;
 };
 
 export const Game: React.FC = () => {
-  const { areaA, areaB, areaC, gameStatus, initGame, clickAreaC } = useGameStore();
+  const { areaA, areaB, areaC, gameStatus, powerUpCount, initGame, clickAreaC, activatePowerUp } = useGameStore();
   const [showInstructions, setShowInstructions] = useState(true);
 
   useEffect(() => {
@@ -51,6 +56,10 @@ export const Game: React.FC = () => {
 
   const handleRestart = () => {
     initGame();
+  };
+
+  const handlePowerUp = () => {
+    activatePowerUp();
   };
 
   // Count blocks in each area
@@ -105,7 +114,7 @@ export const Game: React.FC = () => {
               <div className="overflow-indicator top">⬆️ 还有更多方块</div>
             )}
             <div className="area-content-wrapper">
-              <div className="area-content" style={{ gridTemplateColumns: `repeat(${areaA.length}, 1fr)` }}>
+              <div className="area-content area-a-grid" style={{ gridTemplateColumns: `repeat(${areaA.length}, 1fr)` }}>
                 {areaA.map((column, colIndex) => (
                   <div key={colIndex} className="column">
                     {Array.from({ length: DISPLAY_ROWS }).map((_, rowIndex) => {
@@ -154,8 +163,17 @@ export const Game: React.FC = () => {
                 </div>
               ))}
             </div>
-            <div className="capacity-hint">
-              {areaBCount === areaB.length ? '⚠️ 暂存区已满' : `还可放 ${areaB.length - areaBCount} 个`}
+            <div className="area-b-footer">
+              <div className="capacity-hint">
+                {areaBCount === areaB.length ? '⚠️ 暂存区已满' : `还可放 ${areaB.length - areaBCount} 个`}
+              </div>
+              <button 
+                className={`powerup-btn ${powerUpCount === 0 || areaBCount === 0 ? 'disabled' : ''}`}
+                onClick={handlePowerUp}
+                disabled={powerUpCount === 0 || areaBCount === 0 || gameStatus !== 'playing'}
+              >
+                🧹 清除道具 ({powerUpCount})
+              </button>
             </div>
           </div>
 
@@ -167,7 +185,7 @@ export const Game: React.FC = () => {
             </div>
             <div className="top-indicator">⬆️ 点击第一行的方块</div>
             <div className="area-content-wrapper">
-              <div className="area-content" style={{ gridTemplateColumns: `repeat(${areaC.length}, 1fr)` }}>
+              <div className="area-content area-c-grid" style={{ gridTemplateColumns: `repeat(${areaC.length}, 1fr)` }}>
                 {areaC.map((column, colIndex) => (
                   <div key={colIndex} className="column">
                     {Array.from({ length: DISPLAY_ROWS }).map((_, rowIndex) => {
@@ -208,8 +226,9 @@ export const Game: React.FC = () => {
               <li>暂存区 B 的方块消除 3 个区域 A 的方块后，会从暂存区移除</li>
               <li>区域 A 的方块消除后，上方方块会自动下落补位</li>
               <li>区域 C 的方块被取走后，下方方块会自动上移补位</li>
+              <li>🧹 清除道具可移除暂存区前3个方块及对应剩余消除数的区域A方块</li>
               <li>胜利条件：所有区域都没有方块</li>
-              <li>失败条件：暂存区 B 被填满且无法消除</li>
+              <li>失败条件：暂存区 B 被填满且无法消除且没有道具</li>
             </ul>
           </div>
         </aside>
