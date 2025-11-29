@@ -150,9 +150,10 @@ export const useGameStore = create<GameState>((set, get) => ({
     const newAreaB = [...areaB];
     newAreaB[emptyIndex] = block;
     
+    // Update state
     set({ areaC: newAreaC, areaB: newAreaB });
     
-    // Try to eliminate
+    // Try to eliminate immediately - Zustand's get() returns updated state after set()
     get().tryEliminate();
   },
 
