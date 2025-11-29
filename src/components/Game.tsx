@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
 import type { Block as BlockType } from '../store/gameStore';
@@ -24,6 +24,7 @@ const getBlockAtDisplayPosition = (
 
 export const Game: React.FC = () => {
   const { areaA, areaB, areaC, gameStatus, initGame, clickAreaC } = useGameStore();
+  const [showInstructions, setShowInstructions] = useState(true);
 
   useEffect(() => {
     initGame();
@@ -40,11 +41,30 @@ export const Game: React.FC = () => {
   // Find the maximum row count in Area A for proper grid display
   const maxAreaARows = Math.max(...areaA.map(col => col.length), 1);
 
+  // Count blocks in each area
+  const areaACount = areaA.reduce((sum, col) => sum + col.length, 0);
+  const areaCCount = areaC.reduce((sum, col) => sum + col.length, 0);
+  const areaBCount = areaB.filter(b => b !== null).length;
+
   return (
     <div className="game-container">
-      <h1 className="game-title">消除游戏</h1>
+      {/* Header with title and controls */}
+      <header className="game-header">
+        <h1 className="game-title">🎮 消除游戏</h1>
+        <div className="header-controls">
+          <button 
+            className="help-toggle" 
+            onClick={() => setShowInstructions(!showInstructions)}
+          >
+            {showInstructions ? '隐藏规则' : '显示规则'}
+          </button>
+          <button className="restart-btn" onClick={handleRestart}>
+            重新开始
+          </button>
+        </div>
+      </header>
       
-      {/* Game Status */}
+      {/* Game Status Overlay */}
       {gameStatus !== 'playing' && (
         <div className={`game-status ${gameStatus}`}>
           {gameStatus === 'won' ? '🎉 胜利！' : '😢 游戏结束'}
@@ -54,103 +74,114 @@ export const Game: React.FC = () => {
         </div>
       )}
 
-      {/* Area A - Blocks to be eliminated */}
-      <div className="area area-a">
-        <h2>区域 A - 待消除</h2>
-        <div className="area-content" style={{ gridTemplateColumns: `repeat(${areaA.length}, 1fr)` }}>
-          {areaA.map((column, colIndex) => (
-            <div key={colIndex} className="column">
-              {/* Render from top to bottom, but blocks are stored bottom-up */}
-              {Array.from({ length: maxAreaARows }).map((_, rowIndex) => {
-                const block = getBlockAtDisplayPosition(column, rowIndex, maxAreaARows);
-                
-                return (
-                  <div key={rowIndex} className="cell">
-                    <AnimatePresence mode="popLayout">
-                      {block && (
-                        <Block 
-                          key={block.id} 
-                          color={block.color} 
-                        />
-                      )}
-                    </AnimatePresence>
-                  </div>
-                );
-              })}
+      {/* Main Game Content */}
+      <main className="game-main">
+        {/* Game Board - Three Column Layout */}
+        <div className="game-board">
+          {/* Area A - Blocks to be eliminated (Left) */}
+          <div className="area area-a">
+            <div className="area-header">
+              <h2>区域 A · 待消除</h2>
+              <span className="area-badge">{areaACount} 个</span>
             </div>
-          ))}
-        </div>
-        <div className="bottom-indicator">⬇️ 只能消除最下面一行</div>
-      </div>
-
-      {/* Area B - Temporary storage */}
-      <div className="area area-b">
-        <h2>区域 B - 暂存区</h2>
-        <div className="area-b-content">
-          {areaB.map((block, index) => (
-            <div key={index} className="cell">
-              <AnimatePresence mode="popLayout">
-                {block && (
-                  <Block 
-                    key={block.id} 
-                    color={block.color}
-                    size="small"
-                    eliminatedCount={block.eliminatedCount}
-                  />
-                )}
-              </AnimatePresence>
+            <div className="area-content" style={{ gridTemplateColumns: `repeat(${areaA.length}, 1fr)` }}>
+              {areaA.map((column, colIndex) => (
+                <div key={colIndex} className="column">
+                  {Array.from({ length: maxAreaARows }).map((_, rowIndex) => {
+                    const block = getBlockAtDisplayPosition(column, rowIndex, maxAreaARows);
+                    
+                    return (
+                      <div key={rowIndex} className="cell">
+                        <AnimatePresence mode="popLayout">
+                          {block && (
+                            <Block 
+                              key={block.id} 
+                              color={block.color} 
+                            />
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-        <div className="capacity-hint">容量: {areaB.filter(b => b !== null).length}/{areaB.length}</div>
-      </div>
+            <div className="bottom-indicator">⬇️ 只能消除最下面一行</div>
+          </div>
 
-      {/* Area C - Blocks to use */}
-      <div className="area area-c">
-        <h2>区域 C - 消除用方块</h2>
-        <div className="top-indicator">⬆️ 点击第一行的方块</div>
-        <div className="area-content" style={{ gridTemplateColumns: `repeat(${areaC.length}, 1fr)` }}>
-          {areaC.map((column, colIndex) => (
-            <div key={colIndex} className="column">
-              {column.map((block, rowIndex) => (
-                <div key={rowIndex} className="cell">
+          {/* Area B - Temporary storage (Center) */}
+          <div className="area area-b">
+            <div className="area-header">
+              <h2>暂存区 B</h2>
+              <span className="area-badge">{areaBCount}/{areaB.length}</span>
+            </div>
+            <div className="area-b-content">
+              {areaB.map((block, index) => (
+                <div key={index} className="cell">
                   <AnimatePresence mode="popLayout">
                     {block && (
                       <Block 
                         key={block.id} 
                         color={block.color}
-                        clickable={rowIndex === 0 && gameStatus === 'playing'}
-                        onClick={() => rowIndex === 0 && handleAreaCClick(colIndex)}
+                        size="small"
+                        eliminatedCount={block.eliminatedCount}
                       />
                     )}
                   </AnimatePresence>
                 </div>
               ))}
             </div>
-          ))}
+            <div className="capacity-hint">
+              {areaBCount === areaB.length ? '⚠️ 暂存区已满' : `还可放 ${areaB.length - areaBCount} 个`}
+            </div>
+          </div>
+
+          {/* Area C - Blocks to use (Right) */}
+          <div className="area area-c">
+            <div className="area-header">
+              <h2>区域 C · 消除用</h2>
+              <span className="area-badge">{areaCCount} 个</span>
+            </div>
+            <div className="top-indicator">⬆️ 点击第一行的方块</div>
+            <div className="area-content" style={{ gridTemplateColumns: `repeat(${areaC.length}, 1fr)` }}>
+              {areaC.map((column, colIndex) => (
+                <div key={colIndex} className="column">
+                  {column.map((block, rowIndex) => (
+                    <div key={rowIndex} className="cell">
+                      <AnimatePresence mode="popLayout">
+                        {block && (
+                          <Block 
+                            key={block.id} 
+                            color={block.color}
+                            clickable={rowIndex === 0 && gameStatus === 'playing'}
+                            onClick={() => rowIndex === 0 && handleAreaCClick(colIndex)}
+                          />
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
 
-      {/* Game instructions */}
-      <div className="instructions">
-        <h3>游戏规则</h3>
-        <ul>
-          <li>点击区域 C 最上面一行的方块，将其移动到暂存区 B</li>
-          <li>暂存区 B 的方块可以逐个消除区域 A 最下面一行的相同颜色方块</li>
-          <li>暂存区 B 的方块消除 3 个区域 A 的方块后，会从暂存区移除</li>
-          <li>区域 A 的方块消除后，上方方块会自动下落补位</li>
-          <li>区域 C 的方块被取走后，下方方块会自动上移补位</li>
-          <li>胜利条件：所有区域都没有方块</li>
-          <li>失败条件：暂存区 B 被填满且无法消除</li>
-        </ul>
-      </div>
-
-      {/* Restart button when playing */}
-      {gameStatus === 'playing' && (
-        <button className="restart-btn playing" onClick={handleRestart}>
-          重新开始
-        </button>
-      )}
+        {/* Instructions Panel (Right Sidebar) */}
+        <aside className={`instructions-panel ${showInstructions ? '' : 'collapsed'}`}>
+          <div className="instructions">
+            <h3>📖 游戏规则</h3>
+            <ul>
+              <li>点击区域 C 最上面一行的方块，将其移动到暂存区 B</li>
+              <li>暂存区 B 的方块可以逐个消除区域 A 最下面一行的相同颜色方块</li>
+              <li>暂存区 B 的方块消除 3 个区域 A 的方块后，会从暂存区移除</li>
+              <li>区域 A 的方块消除后，上方方块会自动下落补位</li>
+              <li>区域 C 的方块被取走后，下方方块会自动上移补位</li>
+              <li>胜利条件：所有区域都没有方块</li>
+              <li>失败条件：暂存区 B 被填满且无法消除</li>
+            </ul>
+          </div>
+        </aside>
+      </main>
     </div>
   );
 };

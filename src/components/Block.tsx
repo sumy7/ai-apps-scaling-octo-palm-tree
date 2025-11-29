@@ -24,7 +24,7 @@ export const Block: React.FC<BlockProps> = ({
   size = 'normal',
   eliminatedCount
 }) => {
-  const sizeValue = size === 'normal' ? 50 : 40;
+  const sizeValue = size === 'normal' ? 44 : 36;
   
   return (
     <motion.div
@@ -40,12 +40,15 @@ export const Block: React.FC<BlockProps> = ({
         backgroundColor: colorMap[color],
         borderRadius: 8,
         cursor: clickable ? 'pointer' : 'default',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+        boxShadow: clickable 
+          ? '0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2)' 
+          : '0 2px 4px rgba(0,0,0,0.3)',
         border: '2px solid rgba(255,255,255,0.3)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         position: 'relative',
+        transition: 'box-shadow 0.2s',
       }}
     >
       {eliminatedCount !== undefined && eliminatedCount > 0 && (
